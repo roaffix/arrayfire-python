@@ -9,11 +9,13 @@
 ########################################################
 
 import arrayfire as af
+
 from . import _util
+
 
 def simple_random(verbose=False):
     display_func = _util.display_func(verbose)
-    print_func   = _util.print_func(verbose)
+    print_func = _util.print_func(verbose)
 
     display_func(af.randu(3, 3, 1, 2))
     display_func(af.randu(3, 3, 1, 2, af.Dtype.b8))
@@ -34,5 +36,6 @@ def simple_random(verbose=False):
     display_func(af.randn(3, 3, engine=engine))
     engine.set_seed(100)
     assert(engine.get_seed() == 100)
+
 
 _util.tests['random'] = simple_random

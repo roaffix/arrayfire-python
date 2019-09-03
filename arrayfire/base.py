@@ -11,12 +11,13 @@
 Implementation of BaseArray class.
 """
 
-from .library import *
-from .util import *
+from .library import c_void_ptr_t
 
-class BaseArray(object):
+
+class BaseArray:
     """
     Base array class for arrayfire. For internal use only.
     """
+
     def __init__(self):
         self.arr = c_void_ptr_t(0)

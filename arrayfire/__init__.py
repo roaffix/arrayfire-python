@@ -53,27 +53,27 @@ try:
 except ImportError:
     pass
 
-from .library    import *
-from .array      import *
-from .data       import *
-from .util       import *
-from .algorithm  import *
-from .device     import *
-from .blas       import *
-from .arith      import *
+from .algorithm import *
+from .arith import *
+from .array import *
+from .bcast import *
+from .blas import *
+from .data import *
+from .device import *
+from .features import *
+from .graphics import *
+from .image import *
+from .index import *
+from .interop import *
+from .lapack import *
+from .library import *
+from .random import *
+from .signal import *
+from .sparse import *
 from .statistics import *
-from .lapack     import *
-from .signal     import *
-from .image      import *
-from .features   import *
-from .vision     import *
-from .graphics   import *
-from .bcast      import *
-from .index      import *
-from .interop    import *
-from .timer      import *
-from .random     import *
-from .sparse     import *
+from .timer import *
+from .util import *
+from .vision import *
 
 # do not export default modules as part of arrayfire
 del ct
@@ -81,5 +81,5 @@ del inspect
 del numbers
 del os
 
-if (AF_NUMPY_FOUND):
+if AF_NUMPY_FOUND:
     del np

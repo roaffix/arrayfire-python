@@ -11,9 +11,10 @@
 Computer vision functions (FAST, ORB, etc)
 """
 
-from .library import *
 from .array import *
 from .features import *
+from .library import *
+
 
 def fast(image, threshold=20.0, arc_length=9, non_max=True, feature_ratio=0.05, edge=3):
     """
@@ -47,10 +48,11 @@ def fast(image, threshold=20.0, arc_length=9, non_max=True, feature_ratio=0.05, 
 
     """
     out = Features()
-    safe_call(backend.get().af_fast(c_pointer(out.feat),
-                                    image.arr, c_float_t(threshold), c_uint_t(arc_length), non_max,
-                                    c_float_t(feature_ratio), c_uint_t(edge)))
+    safe_call(backend.get().af_fast(
+        c_pointer(out.feat), image.arr, c_float_t(threshold), c_uint_t(arc_length), non_max,
+        c_float_t(feature_ratio), c_uint_t(edge)))
     return out
+
 
 def harris(image, max_corners=500, min_response=1E5, sigma=1.0, block_size=0, k_thr=0.04):
     """
@@ -91,12 +93,13 @@ def harris(image, max_corners=500, min_response=1E5, sigma=1.0, block_size=0, k_
 
     """
     out = Features()
-    safe_call(backend.get().af_harris(c_pointer(out.feat),
-                                      image.arr, c_uint_t(max_corners), c_float_t(min_response),
-                                      c_float_t(sigma), c_uint_t(block_size), c_float_t(k_thr)))
+    safe_call(backend.get().af_harris(
+        c_pointer(out.feat), image.arr, c_uint_t(max_corners), c_float_t(min_response), c_float_t(sigma),
+        c_uint_t(block_size), c_float_t(k_thr)))
     return out
 
-def orb(image, threshold=20.0, max_features=400, scale = 1.5, num_levels = 4, blur_image = False):
+
+def orb(image, threshold=20.0, max_features=400, scale=1.5, num_levels=4, blur_image=False):
     """
     ORB Feature descriptor.
 
@@ -131,12 +134,13 @@ def orb(image, threshold=20.0, max_features=400, scale = 1.5, num_levels = 4, bl
     """
     feat = Features()
     desc = Array()
-    safe_call(backend.get().af_orb(c_pointer(feat.feat), c_pointer(desc.arr), image.arr,
-                                   c_float_t(threshold), c_uint_t(max_features),
-                                   c_float_t(scale), c_uint_t(num_levels), blur_image))
+    safe_call(backend.get().af_orb(
+        c_pointer(feat.feat), c_pointer(desc.arr), image.arr, c_float_t(threshold), c_uint_t(max_features),
+        c_float_t(scale), c_uint_t(num_levels), blur_image))
     return feat, desc
 
-def hamming_matcher(query, database, dim = 0, num_nearest = 1):
+
+def hamming_matcher(query, database, dim=0, num_nearest=1):
     """
     Hamming distance matcher.
 
@@ -164,12 +168,12 @@ def hamming_matcher(query, database, dim = 0, num_nearest = 1):
     """
     index = Array()
     dist = Array()
-    safe_call(backend.get().af_hamming_matcher(c_pointer(index.arr), c_pointer(dist.arr),
-                                               query.arr, database.arr,
-                                               c_dim_t(dim), c_dim_t(num_nearest)))
+    safe_call(backend.get().af_hamming_matcher(
+        c_pointer(index.arr), c_pointer(dist.arr), query.arr, database.arr, c_dim_t(dim), c_dim_t(num_nearest)))
     return index, dist
 
-def nearest_neighbour(query, database, dim = 0, num_nearest = 1, match_type=MATCH.SSD):
+
+def nearest_neighbour(query, database, dim=0, num_nearest=1, match_type=MATCH.SSD):
     """
     Nearest Neighbour matcher.
 
@@ -200,13 +204,13 @@ def nearest_neighbour(query, database, dim = 0, num_nearest = 1, match_type=MATC
     """
     index = Array()
     dist = Array()
-    safe_call(backend.get().af_nearest_neighbour(c_pointer(index.arr), c_pointer(dist.arr),
-                                                 query.arr, database.arr,
-                                                 c_dim_t(dim), c_dim_t(num_nearest),
-                                                 match_type.value))
+    safe_call(backend.get().af_nearest_neighbour(
+        c_pointer(index.arr), c_pointer(dist.arr), query.arr, database.arr, c_dim_t(dim), c_dim_t(num_nearest),
+        match_type.value))
     return index, dist
 
-def match_template(image, template, match_type = MATCH.SAD):
+
+def match_template(image, template, match_type=MATCH.SAD):
     """
     Find the closest match of a template in an image.
 
@@ -229,10 +233,9 @@ def match_template(image, template, match_type = MATCH.SAD):
 
     """
     out = Array()
-    safe_call(backend.get().af_match_template(c_pointer(out.arr),
-                                              image.arr, template.arr,
-                                              match_type.value))
+    safe_call(backend.get().af_match_template(c_pointer(out.arr), image.arr, template.arr, match_type.value))
     return out
+
 
 def susan(image, radius=3, diff_thr=32, geom_thr=10, feature_ratio=0.05, edge=3):
     """
@@ -266,11 +269,11 @@ def susan(image, radius=3, diff_thr=32, geom_thr=10, feature_ratio=0.05, edge=3)
 
     """
     out = Features()
-    safe_call(backend.get().af_susan(c_pointer(out.feat),
-                                     image.arr, c_uint_t(radius), c_float_t(diff_thr),
-                                     c_float_t(geom_thr), c_float_t(feature_ratio),
-                                     c_uint_t(edge)))
+    safe_call(backend.get().af_susan(
+        c_pointer(out.feat), image.arr, c_uint_t(radius), c_float_t(diff_thr), c_float_t(geom_thr),
+        c_float_t(feature_ratio), c_uint_t(edge)))
     return out
+
 
 def dog(image, radius1, radius2):
     """
@@ -301,12 +304,12 @@ def dog(image, radius1, radius2):
     """
 
     out = Array()
-    safe_call(backend.get().af_dog(c_pointer(out.arr),
-                                   image.arr, radius1, radius2))
+    safe_call(backend.get().af_dog(c_pointer(out.arr), image.arr, radius1, radius2))
     return out
 
-def sift(image, num_layers=3, contrast_threshold=0.04, edge_threshold=10.0, initial_sigma = 1.6,
-         double_input = True, intensity_scale = 0.00390625, feature_ratio = 0.05):
+
+def sift(image, num_layers=3, contrast_threshold=0.04, edge_threshold=10.0, initial_sigma=1.6,
+         double_input=True, intensity_scale=0.00390625, feature_ratio=0.05):
     """
     SIFT feature detector and descriptor.
 
@@ -345,14 +348,16 @@ def sift(image, num_layers=3, contrast_threshold=0.04, edge_threshold=10.0, init
 
     feat = Features()
     desc = Array()
-    safe_call(backend.get().af_sift(c_pointer(feat.feat), c_pointer(desc.arr),
-                      image.arr, num_layers, c_float_t(contrast_threshold), c_float_t(edge_threshold),
-                      c_float_t(initial_sigma), double_input, c_float_t(intensity_scale), c_float_t(feature_ratio)))
+    safe_call(backend.get().af_sift(
+        c_pointer(feat.feat), c_pointer(desc.arr), image.arr, num_layers, c_float_t(contrast_threshold),
+        c_float_t(edge_threshold), c_float_t(initial_sigma), double_input, c_float_t(intensity_scale),
+        c_float_t(feature_ratio)))
 
     return (feat, desc)
 
-def gloh(image, num_layers=3, contrast_threshold=0.04, edge_threshold=10.0, initial_sigma = 1.6,
-         double_input = True, intensity_scale = 0.00390625, feature_ratio = 0.05):
+
+def gloh(image, num_layers=3, contrast_threshold=0.04, edge_threshold=10.0, initial_sigma=1.6,
+         double_input=True, intensity_scale=0.00390625, feature_ratio=0.05):
     """
     GLOH feature detector and descriptor.
 
@@ -391,16 +396,16 @@ def gloh(image, num_layers=3, contrast_threshold=0.04, edge_threshold=10.0, init
 
     feat = Features()
     desc = Array()
-    safe_call(backend.get().af_gloh(c_pointer(feat.feat), c_pointer(desc.arr),
-                      image.arr, num_layers, c_float_t(contrast_threshold),
-                      c_float_t(edge_threshold), c_float_t(initial_sigma),
-                      double_input, c_float_t(intensity_scale), 
-                      c_float_t(feature_ratio)))
+    safe_call(backend.get().af_gloh(
+        c_pointer(feat.feat), c_pointer(desc.arr), image.arr, num_layers, c_float_t(contrast_threshold),
+        c_float_t(edge_threshold), c_float_t(initial_sigma), double_input, c_float_t(intensity_scale),
+        c_float_t(feature_ratio)))
 
     return (feat, desc)
 
-def homography(x_src, y_src, x_dst, y_dst, htype = HOMOGRAPHY.RANSAC,
-               ransac_threshold = 3.0, iters = 1000, out_type = Dtype.f32):
+
+def homography(x_src, y_src, x_dst, y_dst, htype=HOMOGRAPHY.RANSAC, ransac_threshold=3.0,
+               iters=1000, out_type=Dtype.f32):
     """
     Homography estimation
 
@@ -436,7 +441,7 @@ def homography(x_src, y_src, x_dst, y_dst, htype = HOMOGRAPHY.RANSAC,
 
     H = Array()
     inliers = c_int_t(0)
-    safe_call(backend.get().af_homography(c_pointer(H), c_pointer(inliers),
-                                          x_src.arr, y_src.arr, x_dst.arr, y_dst.arr,
-                                          htype.value, ransac_threshold, iters, out_type.value))
+    safe_call(backend.get().af_homography(
+        c_pointer(H), c_pointer(inliers), x_src.arr, y_src.arr, x_dst.arr, y_dst.arr, htype.value, ransac_threshold,
+        iters, out_type.value))
     return (H, inliers)

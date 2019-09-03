@@ -12,6 +12,7 @@
 
 import sys
 from time import time
+
 import arrayfire as af
 
 try:

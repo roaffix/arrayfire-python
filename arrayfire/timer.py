@@ -10,10 +10,11 @@
 Functions to time arrayfire.
 """
 
-from .library import *
-from .device import (sync, eval)
-from time import time
 import math
+from time import time
+
+from .device import eval, sync
+
 
 def timeit(af_func, *args):
     """
@@ -43,7 +44,7 @@ def timeit(af_func, *args):
         sync()
         sample_time = min(sample_time, time() - start)
 
-    if (sample_time >= 0.5):
+    if sample_time >= 0.5:
         return sample_time
 
     num_iters = max(math.ceil(1.0 / sample_time), 3.0)

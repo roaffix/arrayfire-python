@@ -12,6 +12,7 @@
 
 import sys
 from time import time
+
 import arrayfire as af
 
 try:
@@ -35,12 +36,9 @@ def to_sparse(A):
 
 
 def to_scipy_sparse(spA, fmt='csr'):
-    vals = np.asarray(af.sparse.sparse_get_values(spA).to_list(),
-                      dtype = np.float32)
-    rows = np.asarray(af.sparse.sparse_get_row_idx(spA).to_list(),
-                      dtype = np.int)
-    cols = np.asarray(af.sparse.sparse_get_col_idx(spA).to_list(),
-                      dtype = np.int)
+    vals = np.asarray(af.sparse.sparse_get_values(spA).to_list(), dtype=np.float32)
+    rows = np.asarray(af.sparse.sparse_get_row_idx(spA).to_list(), dtype=np.int)
+    cols = np.asarray(af.sparse.sparse_get_col_idx(spA).to_list(), dtype=np.int)
     return sp.csr_matrix((vals, cols, rows), dtype=np.float32)
 
 
@@ -60,8 +58,8 @@ def setup_input(n, sparsity=7):
 def input_info(A, Asp):
     m, n = A.dims()
     nnz = af.sum((A != 0))
-    print("    matrix size:                %i x %i" %(m, n))
-    print("    matrix sparsity:            %2.2f %%" %(100*nnz/n**2,))
+    print("    matrix size:                %i x %i" % (m, n))
+    print("    matrix sparsity:            %2.2f %%" % (100*nnz/n**2,))
     print("    dense matrix memory usage:  ")
     print("    sparse matrix memory usage: ")
 
@@ -165,29 +163,30 @@ def test():
 def bench(n=4*1024, sparsity=7, maxiter=10, iters=10):
 
     # generate data
-    print("\nGenerating benchmark data for n = %i ..." %n)
+    print("\nGenerating benchmark data for n = %i ..." % n)
     A, b, x0 = setup_input(n, sparsity)  # dense A
     Asp = to_sparse(A)  # sparse A
     input_info(A, Asp)
 
     # make benchmarks
-    print("Benchmarking CG solver for n = %i ..." %n)
+    print("Benchmarking CG solver for n = %i ..." % n)
     t1 = timeit(calc_arrayfire, iters, args=(A, b, x0, maxiter))
-    print("    arrayfire - dense:            %f ms" %t1)
+    print("    arrayfire - dense:            %f ms" % t1)
     t2 = timeit(calc_arrayfire, iters, args=(Asp, b, x0, maxiter))
-    print("    arrayfire - sparse:           %f ms" %t2)
+    print("    arrayfire - sparse:           %f ms" % t2)
     if np:
         An = to_numpy(A)
         bn = to_numpy(b)
         x0n = to_numpy(x0)
         t3 = timeit(calc_numpy, iters, args=(An, bn, x0n, maxiter))
-        print("    numpy     - dense:            %f ms" %t3)
+        print("    numpy     - dense:            %f ms" % t3)
     if sp:
         Asc = to_scipy_sparse(Asp)
         t4 = timeit(calc_scipy_sparse, iters, args=(Asc, bn, x0n, maxiter))
-        print("    scipy     - sparse:           %f ms" %t4)
+        print("    scipy     - sparse:           %f ms" % t4)
         t5 = timeit(calc_scipy_sparse_linalg_cg, iters, args=(Asc, bn, x0n, maxiter))
-        print("    scipy     - sparse.linalg.cg: %f ms" %t5)
+        print("    scipy     - sparse.linalg.cg: %f ms" % t5)
+
 
 if __name__ == "__main__":
     #af.set_backend('cpu', unsafe=True)

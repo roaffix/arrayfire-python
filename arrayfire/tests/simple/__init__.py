@@ -7,6 +7,7 @@
 # http://arrayfire.com/licenses/BSD-3-Clause
 ########################################################
 
+from ._util import tests
 from .algorithm import *
 from .arith import *
 from .array_test import *
@@ -17,8 +18,7 @@ from .image import *
 from .index import *
 from .interop import *
 from .lapack import *
-from .signal import *
-from .statistics import *
 from .random import *
+from .signal import *
 from .sparse import *
-from ._util import tests
+from .statistics import *

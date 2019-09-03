@@ -11,9 +11,11 @@
 Features class used for Computer Vision algorithms.
 """
 
-from .library import *
-from .array import *
 import numbers
+
+from .array import *
+from .library import *
+
 
 class Features(object):
     """

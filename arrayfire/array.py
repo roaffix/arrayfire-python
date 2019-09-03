@@ -13,17 +13,21 @@ Array class and helper functions.
 
 import inspect
 import os
+
+from .algorithm import count, sum
+from .arith import cast
+from .base import *
+from .bcast import _bcast_var
+from .index import *
+from .index import _Index4
 from .library import *
 from .util import *
 from .util import _is_number
-from .bcast import _bcast_var
-from .base import *
-from .index import *
-from .index import _Index4
 
 _is_running_in_py_charm = "PYCHARM_HOSTED" in os.environ
 
 _display_dims_limit = None
+
 
 def set_display_dims_limit(*dims):
     """
@@ -43,6 +47,7 @@ def set_display_dims_limit(*dims):
     """
     global _display_dims_limit
     _display_dims_limit = dims
+
 
 def get_display_dims_limit():
     """
@@ -67,6 +72,7 @@ def get_display_dims_limit():
     """
     return _display_dims_limit
 
+
 def _in_display_dims_limit(dims):
     if _is_running_in_py_charm:
         return False
@@ -80,16 +86,18 @@ def _in_display_dims_limit(dims):
                 return False
     return True
 
+
 def _create_array(buf, numdims, idims, dtype, is_device):
     out_arr = c_void_ptr_t(0)
     c_dims = dim4(idims[0], idims[1], idims[2], idims[3])
-    if (not is_device):
-        safe_call(backend.get().af_create_array(c_pointer(out_arr), c_void_ptr_t(buf),
-                                                numdims, c_pointer(c_dims), dtype.value))
+    if not is_device:
+        safe_call(backend.get().af_create_array(
+            c_pointer(out_arr), c_void_ptr_t(buf), numdims, c_pointer(c_dims), dtype.value))
     else:
-        safe_call(backend.get().af_device_array(c_pointer(out_arr), c_void_ptr_t(buf),
-                                                numdims, c_pointer(c_dims), dtype.value))
+        safe_call(backend.get().af_device_array(
+            c_pointer(out_arr), c_void_ptr_t(buf), numdims, c_pointer(c_dims), dtype.value))
     return out_arr
+
 
 def _create_strided_array(buf, numdims, idims, dtype, is_device, offset, strides):
     out_arr = c_void_ptr_t(0)
@@ -106,27 +114,27 @@ def _create_strided_array(buf, numdims, idims, dtype, is_device, offset, strides
         location = Source.device
     else:
         location = Source.host
-    safe_call(backend.get().af_create_strided_array(c_pointer(out_arr), c_void_ptr_t(buf),
-                                                    offset, numdims, c_pointer(c_dims),
-                                                    c_pointer(strides), dtype.value,
-                                                    location.value))
+    safe_call(backend.get().af_create_strided_array(
+        c_pointer(out_arr), c_void_ptr_t(buf), offset, numdims, c_pointer(c_dims), c_pointer(strides), dtype.value,
+        location.value))
     return out_arr
+
 
 def _create_empty_array(numdims, idims, dtype):
     out_arr = c_void_ptr_t(0)
 
-    if numdims == 0: return out_arr
+    if numdims == 0:
+        return out_arr
 
     c_dims = dim4(idims[0], idims[1], idims[2], idims[3])
-    safe_call(backend.get().af_create_handle(c_pointer(out_arr),
-                                             numdims, c_pointer(c_dims), dtype.value))
+    safe_call(backend.get().af_create_handle(c_pointer(out_arr), numdims, c_pointer(c_dims), dtype.value))
     return out_arr
+
 
 def constant_array(val, d0, d1=None, d2=None, d3=None, dtype=Dtype.f32):
     """
     Internal function to create a C array. Should not be used externall.
     """
-
     if not isinstance(dtype, c_int_t):
         if isinstance(dtype, int):
             dtype = c_int_t(dtype)
@@ -142,11 +150,10 @@ def constant_array(val, d0, d1=None, d2=None, d3=None, dtype=Dtype.f32):
         c_real = c_double_t(val.real)
         c_imag = c_double_t(val.imag)
 
-        if (dtype.value != Dtype.c32.value and dtype.value != Dtype.c64.value):
+        if dtype.value != Dtype.c32.value and dtype.value != Dtype.c64.value:
             dtype = Dtype.c32.value
 
-        safe_call(backend.get().af_constant_complex(c_pointer(out), c_real, c_imag,
-                                                    4, c_pointer(dims), dtype))
+        safe_call(backend.get().af_constant_complex(c_pointer(out), c_real, c_imag, 4, c_pointer(dims), dtype))
     elif dtype.value == Dtype.s64.value:
         c_val = c_longlong_t(val.real)
         safe_call(backend.get().af_constant_long(c_pointer(out), c_val, 4, c_pointer(dims)))
@@ -164,7 +171,7 @@ def _binary_func(lhs, rhs, c_func):
     out = Array()
     other = rhs
 
-    if (_is_number(rhs)):
+    if _is_number(rhs):
         ldims = dim4_to_tuple(lhs.dims())
         rty = implicit_dtype(rhs, lhs.type())
         other = Array()
@@ -176,11 +183,12 @@ def _binary_func(lhs, rhs, c_func):
 
     return out
 
+
 def _binary_funcr(lhs, rhs, c_func):
     out = Array()
     other = lhs
 
-    if (_is_number(lhs)):
+    if _is_number(lhs):
         rdims = dim4_to_tuple(rhs.dims())
         lty = implicit_dtype(lhs, rhs.type())
         other = Array()
@@ -192,9 +200,10 @@ def _binary_funcr(lhs, rhs, c_func):
 
     return out
 
+
 def _ctype_to_lists(ctype_arr, dim, shape, offset=0):
-    if (dim == 0):
-        return list(ctype_arr[offset : offset + shape[0]])
+    if dim == 0:
+        return list(ctype_arr[offset: offset + shape[0]])
     else:
         dim_len = shape[dim]
         res = [[]] * dim_len
@@ -202,6 +211,7 @@ def _ctype_to_lists(ctype_arr, dim, shape, offset=0):
             res[n] = _ctype_to_lists(ctype_arr, dim - 1, shape, offset)
             offset += shape[0]
         return res
+
 
 def _slice_to_length(key, dim):
     tkey = [key.start, key.stop, key.step]
@@ -221,6 +231,7 @@ def _slice_to_length(key, dim):
 
     return int(((tkey[1] - tkey[0] - 1) / tkey[2]) + 1)
 
+
 def _get_info(dims, buf_len):
     elements = 1
     numdims = 0
@@ -230,7 +241,7 @@ def _get_info(dims, buf_len):
         for i in range(numdims):
             elements *= dims[i]
             idims[i] = dims[i]
-    elif (buf_len != 0):
+    elif buf_len != 0:
         idims = [buf_len, 1, 1, 1]
         numdims = 1
     else:
@@ -250,8 +261,8 @@ def _get_indices(key):
 
     return inds
 
-def _get_assign_dims(key, idims):
 
+def _get_assign_dims(key, idims):
     dims = [1]*4
 
     for n in range(len(idims)):
@@ -268,7 +279,7 @@ def _get_assign_dims(key, idims):
         return dims
     elif isinstance(key, BaseArray):
         # If the array is boolean take only the number of nonzeros
-        if(key.dtype() is Dtype.b8):
+        if key.dtype() is Dtype.b8:
             dims[0] = int(sum(key))
         else:
             dims[0] = key.elements()
@@ -277,17 +288,17 @@ def _get_assign_dims(key, idims):
         n_inds = len(key)
 
         for n in range(n_inds):
-            if (_is_number(key[n])):
+            if _is_number(key[n]):
                 dims[n] = 1
-            elif (isinstance(key[n], BaseArray)):
+            elif isinstance(key[n], BaseArray):
                 # If the array is boolean take only the number of nonzeros
-                if(key[n].dtype() is Dtype.b8):
+                if key[n].dtype() is Dtype.b8:
                     dims[n] = int(sum(key[n]))
                 else:
                     dims[n] = key[n].elements()
-            elif (isinstance(key[n], slice)):
+            elif isinstance(key[n], slice):
                 dims[n] = _slice_to_length(key[n], idims[n])
-            elif (isinstance(key[n], ParallelRange)):
+            elif isinstance(key[n], ParallelRange):
                 dims[n] = _slice_to_length(key[n].S, idims[n])
             else:
                 raise IndexError("Invalid type while assigning to arrayfire.array")
@@ -295,6 +306,7 @@ def _get_assign_dims(key, idims):
         return dims
     else:
         raise IndexError("Invalid type while assigning to arrayfire.array")
+
 
 def transpose(a, conj=False):
     """
@@ -318,6 +330,7 @@ def transpose(a, conj=False):
     safe_call(backend.get().af_transpose(c_pointer(out.arr), a.arr, conj))
     return out
 
+
 def transpose_inplace(a, conj=False):
     """
     Perform inplace transpose on an input.
@@ -337,6 +350,7 @@ def transpose_inplace(a, conj=False):
 
     """
     safe_call(backend.get().af_transpose_inplace(a.arr, conj))
+
 
 class Array(BaseArray):
 
@@ -444,11 +458,10 @@ class Array(BaseArray):
     __array_priority__ = 30
 
     def __init__(self, src=None, dims=None, dtype=None, is_device=False, offset=None, strides=None):
+        super().__init__()
 
-        super(Array, self).__init__()
-
-        buf=None
-        buf_len=0
+        buf = None
+        buf_len = 0
 
         if dtype is not None:
             if isinstance(dtype, str):
@@ -458,23 +471,23 @@ class Array(BaseArray):
         else:
             type_char = None
 
-        _type_char='f'
+        _type_char = 'f'
 
         if src is not None:
 
-            if (isinstance(src, Array)):
+            if isinstance(src, Array):
                 safe_call(backend.get().af_retain_array(c_pointer(self.arr), src.arr))
                 return
 
             host = __import__("array")
 
             if isinstance(src, host.array):
-                buf,buf_len = src.buffer_info()
+                buf, buf_len = src.buffer_info()
                 _type_char = src.typecode
                 numdims, idims = _get_info(dims, buf_len)
             elif isinstance(src, list):
                 tmp = host.array('f', src)
-                buf,buf_len = tmp.buffer_info()
+                buf, buf_len = tmp.buffer_info()
                 _type_char = tmp.typecode
                 numdims, idims = _get_info(dims, buf_len)
             elif isinstance(src, int) or isinstance(src, c_void_ptr_t):
@@ -486,10 +499,10 @@ class Array(BaseArray):
                 for dim in idims:
                     elements *= dim
 
-                if (elements == 0):
+                if elements == 0:
                     raise RuntimeError("Expected dims when src is data pointer")
 
-                if (type_char is None):
+                if type_char is None:
                     raise TypeError("Expected type_char when src is data pointer")
 
                 _type_char = type_char
@@ -497,18 +510,13 @@ class Array(BaseArray):
             else:
                 raise TypeError("src is an object of unsupported class")
 
-            if (type_char is not None and
-                type_char != _type_char):
+            if type_char is not None and type_char != _type_char:
                 raise TypeError("Can not create array of requested type from input data type")
-            if(offset is None and strides is None):
+            if offset is None and strides is None:
                 self.arr = _create_array(buf, numdims, idims, to_dtype[_type_char], is_device)
             else:
-                self.arr = _create_strided_array(buf, numdims, idims,
-                                                 to_dtype[_type_char],
-                                                 is_device, offset, strides)
-
+                self.arr = _create_strided_array(buf, numdims, idims, to_dtype[_type_char], is_device, offset, strides)
         else:
-
             if type_char is None:
                 type_char = 'f'
 
@@ -547,9 +555,10 @@ class Array(BaseArray):
         """
         Release the C array when going out of scope
         """
-        if self.arr.value:
-            backend.get().af_release_array(self.arr)
-            self.arr.value = 0
+        if not self.arr.value:
+            return
+        backend.get().af_release_array(self.arr)
+        self.arr.value = 0
 
     def device_ptr(self):
         """
@@ -619,9 +628,8 @@ class Array(BaseArray):
         s1 = c_dim_t(0)
         s2 = c_dim_t(0)
         s3 = c_dim_t(0)
-        safe_call(backend.get().af_get_strides(c_pointer(s0), c_pointer(s1),
-                                   c_pointer(s2), c_pointer(s3), self.arr))
-        strides = (s0.value,s1.value,s2.value,s3.value)
+        safe_call(backend.get().af_get_strides(c_pointer(s0), c_pointer(s1), c_pointer(s2), c_pointer(s3), self.arr))
+        strides = (s0.value, s1.value, s2.value, s3.value)
         return strides[:self.numdims()]
 
     def elements(self):
@@ -679,9 +687,8 @@ class Array(BaseArray):
         d1 = c_dim_t(0)
         d2 = c_dim_t(0)
         d3 = c_dim_t(0)
-        safe_call(backend.get().af_get_dims(c_pointer(d0), c_pointer(d1),
-                                   c_pointer(d2), c_pointer(d3), self.arr))
-        dims = (d0.value,d1.value,d2.value,d3.value)
+        safe_call(backend.get().af_get_dims(c_pointer(d0), c_pointer(d1), c_pointer(d2), c_pointer(d3), self.arr))
+        dims = (d0.value, d1.value, d2.value, d3.value)
         return dims[:self.numdims()]
 
     @property
@@ -898,7 +905,7 @@ class Array(BaseArray):
         """
         Perform self /= other.
         """
-        self =  _binary_func(self, other, backend.get().af_div)
+        self = _binary_func(self, other, backend.get().af_div)
         return self
 
     def __rtruediv__(self, other):
@@ -917,7 +924,7 @@ class Array(BaseArray):
         """
         Perform other / self.
         """
-        self =  _binary_func(self, other, backend.get().af_div)
+        self = _binary_func(self, other, backend.get().af_div)
         return self
 
     def __rdiv__(self, other):
@@ -936,7 +943,7 @@ class Array(BaseArray):
         """
         Perform self %= other.
         """
-        self =  _binary_func(self, other, backend.get().af_mod)
+        self = _binary_func(self, other, backend.get().af_mod)
         return self
 
     def __rmod__(self, other):
@@ -955,7 +962,7 @@ class Array(BaseArray):
         """
         Perform self **= other.
         """
-        self =  _binary_func(self, other, backend.get().af_pow)
+        self = _binary_func(self, other, backend.get().af_pow)
         return self
 
     def __rpow__(self, other):
@@ -1105,19 +1112,17 @@ class Array(BaseArray):
             out = Array()
             n_dims = self.numdims()
 
-            if (isinstance(key, Array) and key.type() == Dtype.b8.value):
+            if isinstance(key, Array) and key.type() == Dtype.b8.value:
                 n_dims = 1
-                if (count(key) == 0):
+                if count(key) == 0:
                     return out
 
             inds = _get_indices(key)
 
-            safe_call(backend.get().af_index_gen(c_pointer(out.arr),
-                                    self.arr, c_dim_t(n_dims), inds.pointer))
+            safe_call(backend.get().af_index_gen(c_pointer(out.arr), self.arr, c_dim_t(n_dims), inds.pointer))
             return out
         except RuntimeError as e:
             raise IndexError(str(e))
-
 
     def __setitem__(self, key, val):
         """
@@ -1132,30 +1137,29 @@ class Array(BaseArray):
 
             is_boolean_idx = isinstance(key, Array) and key.type() == Dtype.b8.value
 
-            if (is_boolean_idx):
+            if is_boolean_idx:
                 n_dims = 1
                 num = count(key)
-                if (num == 0):
+                if num == 0:
                     return
 
-            if (_is_number(val)):
+            if _is_number(val):
                 tdims = _get_assign_dims(key, self.dims())
-                if (is_boolean_idx):
+                if is_boolean_idx:
                     n_dims = 1
                     other_arr = constant_array(val, int(num), dtype=self.type())
                 else:
-                    other_arr = constant_array(val, tdims[0] , tdims[1], tdims[2], tdims[3], self.type())
+                    other_arr = constant_array(val, tdims[0], tdims[1], tdims[2], tdims[3], self.type())
                 del_other = True
             else:
                 other_arr = val.arr
                 del_other = False
 
             out_arr = c_void_ptr_t(0)
-            inds  = _get_indices(key)
+            inds = _get_indices(key)
 
-            safe_call(backend.get().af_assign_gen(c_pointer(out_arr),
-                                                  self.arr, c_dim_t(n_dims), inds.pointer,
-                                                  other_arr))
+            safe_call(backend.get().af_assign_gen(
+                c_pointer(out_arr), self.arr, c_dim_t(n_dims), inds.pointer, other_arr))
             safe_call(backend.get().af_release_array(self.arr))
             if del_other:
                 safe_call(backend.get().af_release_array(other_arr))
@@ -1169,7 +1173,7 @@ class Array(BaseArray):
         Returns a reordered array to help interoperate with row major formats.
         """
         ndims = self.numdims()
-        if (ndims == 1):
+        if ndims == 1:
             return self
 
         rdims = tuple(reversed(range(ndims))) + tuple(range(ndims, 4))
@@ -1199,16 +1203,16 @@ class Array(BaseArray):
             (res, dims): tuple of the ctypes array and the shape of the array
 
         """
-        if (self.arr.value == 0):
+        if self.arr.value == 0:
             raise RuntimeError("Can not call to_ctype on empty array")
 
-        tmp = self._reorder() if (row_major) else self
+        tmp = self._reorder() if row_major else self
 
         ctype_type = to_c_type[self.type()] * self.elements()
         res = ctype_type()
 
         safe_call(backend.get().af_get_data_ptr(c_pointer(res), self.arr))
-        if (return_shape):
+        if return_shape:
             return res, self.dims()
         else:
             return res
@@ -1235,7 +1239,7 @@ class Array(BaseArray):
             (res, dims): array.array and the shape of the array
 
         """
-        if (self.arr.value == 0):
+        if self.arr.value == 0:
             raise RuntimeError("Can not call to_array on empty array")
 
         res = self.to_ctype(row_major, return_shape)
@@ -1243,7 +1247,7 @@ class Array(BaseArray):
         host = __import__("array")
         h_type = to_typecode[self.type()]
 
-        if (return_shape):
+        if return_shape:
             return host.array(h_type, res[0]), res[1]
         else:
             return host.array(h_type, res)
@@ -1278,7 +1282,7 @@ class Array(BaseArray):
         Return the first element of the array
         """
 
-        if (self.arr.value == 0):
+        if self.arr.value == 0:
             raise RuntimeError("Can not call to_ctype on empty array")
 
         ctype_type = to_c_type[self.type()]
@@ -1312,8 +1316,8 @@ class Array(BaseArray):
         return self._get_metadata_str()
 
     def _get_metadata_str(self, dims=True):
-        return 'arrayfire.Array()\nType: {}\n{}' \
-            .format(to_typename[self.type()], 'Dims: {}'.format(str(self.dims())) if dims else '')
+        _dims = "Dims: {}".format(str(self.dims())) if dims else ""
+        return "arrayfire.Array()\nType: {}\n{}".format(to_typename[self.type()], _dims)
 
     def _as_str(self):
         arr_str = c_char_ptr_t(0)
@@ -1352,10 +1356,10 @@ class Array(BaseArray):
         if output is None:
             return self.__array__()
 
-        if (output.dtype != to_typecode[self.type()]):
+        if output.dtype != to_typecode[self.type()]:
             raise TypeError("Output is not the same type as the array")
 
-        if (output.size != self.elements()):
+        if output.size != self.elements():
             raise RuntimeError("Output size does not match that of input")
 
         flags = output.flags
@@ -1369,6 +1373,7 @@ class Array(BaseArray):
 
         safe_call(backend.get().af_get_data_ptr(c_void_ptr_t(output.ctypes.data), tmp.arr))
         return output
+
 
 def display(a, precision=4):
     """
@@ -1385,15 +1390,15 @@ def display(a, precision=4):
     name = ""
 
     try:
-        if (expr is not None):
+        if expr is not None:
             st = expr[0].find('(') + 1
             en = expr[0].rfind(')')
             name = expr[0][st:en]
     except IndexError:
         pass
 
-    safe_call(backend.get().af_print_array_gen(name.encode('utf-8'),
-                                               a.arr, c_int_t(precision)))
+    safe_call(backend.get().af_print_array_gen(name.encode('utf-8'), a.arr, c_int_t(precision)))
+
 
 def save_array(key, a, filename, append=False):
     """
@@ -1419,12 +1424,10 @@ def save_array(key, a, filename, append=False):
             The index of the array stored in the file.
     """
     index = c_int_t(-1)
-    safe_call(backend.get().af_save_array(c_pointer(index),
-                                          key.encode('utf-8'),
-                                          a.arr,
-                                          filename.encode('utf-8'),
-                                          append))
+    safe_call(backend.get().af_save_array(
+        c_pointer(index), key.encode('utf-8'), a.arr, filename.encode('utf-8'), append))
     return index.value
+
 
 def read_array(filename, index=None, key=None):
     """
@@ -1449,16 +1452,8 @@ def read_array(filename, index=None, key=None):
     """
     assert((index is not None) or (key is not None))
     out = Array()
-    if (index is not None):
-        safe_call(backend.get().af_read_array_index(c_pointer(out.arr),
-                                                    filename.encode('utf-8'),
-                                                    index))
-    elif (key is not None):
-        safe_call(backend.get().af_read_array_key(c_pointer(out.arr),
-                                                  filename.encode('utf-8'),
-                                                  key.encode('utf-8')))
-
+    if index is not None:
+        safe_call(backend.get().af_read_array_index(c_pointer(out.arr), filename.encode('utf-8'), index))
+    elif key is not None:
+        safe_call(backend.get().af_read_array_key(c_pointer(out.arr), filename.encode('utf-8'), key.encode('utf-8')))
     return out
-
-from .algorithm import (sum, count)
-from .arith import cast

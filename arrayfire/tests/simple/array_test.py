@@ -8,13 +8,16 @@
 # http://arrayfire.com/licenses/BSD-3-Clause
 ########################################################
 
-import arrayfire as af
 import array as host
+
+import arrayfire as af
+
 from . import _util
+
 
 def simple_array(verbose=False):
     display_func = _util.display_func(verbose)
-    print_func   = _util.print_func(verbose)
+    print_func = _util.print_func(verbose)
 
     a = af.Array([1, 2, 3])
     display_func(a)
@@ -30,7 +33,6 @@ def simple_array(verbose=False):
     print_func(a.is_complex(), a.is_real(), a.is_double(), a.is_single())
     print_func(a.is_real_floating(), a.is_floating(), a.is_integer(), a.is_bool())
 
-
     a = af.Array(host.array('i', [4, 5, 6]))
     display_func(a)
     print_func(a.elements(), a.type(), a.dims(), a.numdims())
@@ -38,7 +40,7 @@ def simple_array(verbose=False):
     print_func(a.is_complex(), a.is_real(), a.is_double(), a.is_single())
     print_func(a.is_real_floating(), a.is_floating(), a.is_integer(), a.is_bool())
 
-    a = af.Array(host.array('I', [7, 8, 9] * 3), (3,3))
+    a = af.Array(host.array('I', [7, 8, 9] * 3), (3, 3))
     display_func(a)
     print_func(a.elements(), a.type(), a.dims(), a.numdims())
     print_func(a.is_empty(), a.is_scalar(), a.is_column(), a.is_row())
@@ -49,7 +51,7 @@ def simple_array(verbose=False):
     for n in range(a.elements()):
         print_func(c[n])
 
-    c,s = a.to_ctype(True, True)
+    c, s = a.to_ctype(True, True)
     for n in range(a.elements()):
         print_func(c[n])
     print_func(s)
@@ -61,5 +63,6 @@ def simple_array(verbose=False):
     print_func(lst)
 
     print_func(a.is_sparse())
+
 
 _util.tests['array'] = simple_array

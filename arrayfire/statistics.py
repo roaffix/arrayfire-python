@@ -11,8 +11,9 @@
 Statistical algorithms (mean, var, stdev, etc).
 """
 
-from .library import *
 from .array import *
+from .library import *
+
 
 def mean(a, weights=None, dim=None):
     """
@@ -58,6 +59,7 @@ def mean(a, weights=None, dim=None):
         imag = imag.value
 
         return real if imag == 0 else real + imag * 1j
+
 
 def var(a, isbiased=False, weights=None, dim=None):
     """
@@ -108,6 +110,7 @@ def var(a, isbiased=False, weights=None, dim=None):
 
         return real if imag == 0 else real + imag * 1j
 
+
 def stdev(a, dim=None):
     """
     Calculate standard deviation along a given dimension.
@@ -138,6 +141,7 @@ def stdev(a, dim=None):
         real = real.value
         imag = imag.value
         return real if imag == 0 else real + imag * 1j
+
 
 def cov(a, isbiased=False, dim=None):
     """
@@ -172,6 +176,7 @@ def cov(a, isbiased=False, dim=None):
         imag = imag.value
         return real if imag == 0 else real + imag * 1j
 
+
 def median(a, dim=None):
     """
     Calculate median along a given dimension.
@@ -202,6 +207,7 @@ def median(a, dim=None):
         imag = imag.value
         return real if imag == 0 else real + imag * 1j
 
+
 def corrcoef(x, y):
     """
     Calculate the correlation coefficient of the input arrays.
@@ -225,6 +231,7 @@ def corrcoef(x, y):
     real = real.value
     imag = imag.value
     return real if imag == 0 else real + imag * 1j
+
 
 def topk(data, k, dim=0, order=TOPK.DEFAULT):
     """
@@ -259,6 +266,7 @@ def topk(data, k, dim=0, order=TOPK.DEFAULT):
     values = Array()
     indices = Array()
 
-    safe_call(backend.get().af_topk(c_pointer(values.arr), c_pointer(indices.arr), data.arr, k, c_int_t(dim), order.value))
+    safe_call(
+        backend.get().af_topk(c_pointer(values.arr), c_pointer(indices.arr), data.arr, k, c_int_t(dim), order.value))
 
-    return values,indices
+    return values, indices

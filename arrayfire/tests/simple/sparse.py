@@ -9,11 +9,13 @@
 ########################################################
 
 import arrayfire as af
+
 from . import _util
+
 
 def simple_sparse(verbose=False):
     display_func = _util.display_func(verbose)
-    print_func   = _util.print_func(verbose)
+    print_func = _util.print_func(verbose)
 
     dd = af.randu(5, 5)
     ds = dd * (dd > 0.5)
@@ -24,5 +26,6 @@ def simple_sparse(verbose=False):
     display_func(af.sparse_get_col_idx(sp))
     print_func(af.sparse_get_nnz(sp))
     print_func(af.sparse_get_storage(sp))
+
 
 _util.tests['sparse'] = simple_sparse

@@ -9,11 +9,13 @@
 ########################################################
 
 import arrayfire as af
+
 from . import _util
+
 
 def simple_statistics(verbose=False):
     display_func = _util.display_func(verbose)
-    print_func   = _util.print_func(verbose)
+    print_func = _util.print_func(verbose)
 
     a = af.randu(5, 5)
     b = af.randu(5, 5)
@@ -47,10 +49,11 @@ def simple_statistics(verbose=False):
     data = af.iota(5, 3)
     k = 3
     dim = 0
-    order = af.TOPK.DEFAULT # defaults to af.TOPK.MAX
-    assert(dim == 0) # topk currently supports first dim only
-    values,indices = af.topk(data, k, dim, order)
+    order = af.TOPK.DEFAULT  # defaults to af.TOPK.MAX
+    assert(dim == 0)  # topk currently supports first dim only
+    values, indices = af.topk(data, k, dim, order)
     display_func(values)
     display_func(indices)
+
 
 _util.tests['statistics'] = simple_statistics

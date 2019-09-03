@@ -13,6 +13,7 @@ Functions specific to CUDA backend.
 This module provides interoperability with other CUDA libraries.
 """
 
+
 def get_stream(idx):
     """
     Get the CUDA stream used for the device `idx` by ArrayFire.
@@ -32,12 +33,13 @@ def get_stream(idx):
     from .util import safe_call as safe_call
     from .library import backend as backend
 
-    if (backend.name() != "cuda"):
+    if backend.name() != "cuda":
         raise RuntimeError("Invalid backend loaded")
 
     stream = c_void_ptr_t(0)
     safe_call(backend.get().afcu_get_stream(c_pointer(stream), idx))
     return stream.value
+
 
 def get_native_id(idx):
     """
@@ -58,12 +60,13 @@ def get_native_id(idx):
     from .util import safe_call as safe_call
     from .library import backend as backend
 
-    if (backend.name() != "cuda"):
+    if backend.name() != "cuda":
         raise RuntimeError("Invalid backend loaded")
 
     native = c_int_t(0)
     safe_call(backend.get().afcu_get_native_id(c_pointer(native), idx))
     return native.value
+
 
 def set_native_id(idx):
     """
@@ -80,7 +83,7 @@ def set_native_id(idx):
     from .util import safe_call as safe_call
     from .library import backend as backend
 
-    if (backend.name() != "cuda"):
+    if backend.name() != "cuda":
         raise RuntimeError("Invalid backend loaded")
 
     safe_call(backend.get().afcu_set_native_id(idx))
